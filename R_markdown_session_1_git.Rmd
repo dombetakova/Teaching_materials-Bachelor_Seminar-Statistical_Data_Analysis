@@ -1,0 +1,451 @@
+---
+title: "Markdown_session_1"
+author: "Dominika Betakova"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+Content:
+- setting up a directory
+- finding help
+- selecting objects (variables) from other object (a dataframe)
+- creating vectors/dataframes
+- missing values
+- frequencies / tables
+- mean, median, mode
+- interquantile range, min, max, standard deviation, variance
+- bar chart / bar plot, histogram, boxplot
+
+Session 1: 1/2
+
+This is where we write comments; if we want to write a code, we click on plus C (in the top right corner, and a place is created below) and choosing R. Alternatively, you can use a shortcut Cmd + Option + I (Mac) or Ctrl + Alt + I (Windows).
+
+This is where we write code. Just run this below (click on the green arrow) OR press Command + Enter (Mac) OR Control + Enter (Windows)
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+First, we need to set up a directory. This is where everything we generate should be saved and where the files R needs should be saved (from Moodle, you need to save them in your folder manually).
+Now manually create a folder called R Directory (in your documents for instance. Within this folder, create a folder UE_STADA_Seminar). Then, paste the path (how to find the path is in the Power Point for Mac and Windows).
+Mac (for instance):
+
+setwd("/Users/betakova/Documents/R - Directory/PhD/Teaching_materials")
+The same in Windows would be:
+setwd("C:/Users/betakova/Documents/R - Directory/PhD/Teaching_materials")
+
+I am using a Mac, so using the path below:
+```{r}
+setwd("/Users/betakova/Documents/R - Directory/PhD/Teaching_materials")
+
+```
+
+Now let's check whether the directory is set up correctly where we want it. The result should be your correct path:
+
+```{r}
+getwd()
+```
+If the setting up the directory does not work, the command "getwd()" shows you where your default working directory is (and where the plots, etc., will be stored). If you have problems, here is more information: http://www.sthda.com/english/wiki/running-rstudio-and-setting-up-your-working-directory-easy-r-programming
+
+
+Now let's create some vectors, matrices, etc.
+
+Short information on debugging: When you are programming, you will always, and I do mean always, make errors (also called bugs) in your code. You might misspell a function, include an extra comma, or some days…R just won’t want to work with you. Debugging will always be a challenge. However, over time you’ll learn which bugs are the most common and get faster and faster at finding and correcting them. Here is the list of most common bugs you can encounter: https://bookdown.org/ndphillips/YaRrr/debugging.html
+When you need help in R or you do not know where a function is from, type: help(function)
+
+```{r}
+help(mean)
+```
+
+Now, the right hand-side should include information on the function mean. It shows you which arguments it needs, what are the options, etc.
+
+If you do not know where the function you need to use comes from, type: ?function
+
+```{r}
+?mean
+```
+
+On the top on the right side, it says: mean (base). This means that mean is a base function of R (you do not need a specific package to use it).
+
+There are many ways to use R: you can create the data directly (for practice purposes like now or for some simulations); or use existing datasets. First, let's try to create 2 vectors and combine them into a dataframe (you can take a look at the Andy Field's book Discovering Statistics with R, chapter 3.4.5 - 3.5.4.4).
+
+You can use the c() function to create objects that contain data, it can be numbers, characters, etc. Let's create an object called metallicaNames. We can create this object by executing the following command:
+```{r}
+metallicaNames<-c("Lars","James","Kirk","Rob")
+```
+
+Let’s say we wanted another object containing the ages of each band member. At the time of publication of the Andy Field's book (2012), their ages were 47, 47, 48 and 46, respectively. We can create a new object called metallicaAges in the same way as before, by executing:
+
+```{r}
+metallicaAges<-c(47, 47, 48, 46)
+```
+
+Notice that when we specified names we placed the names in quotes, but when we entered their ages we did not. The quotes tell R that the data are not numeric. Variables that consist of data that are text are known as string variables. Variables that contain data that are numbers are known as numeric variables. R and its associated packages tend to be able to treat data fairly intelligently. In other words, we don’t need to tell R that a variable is numeric or not, it sort of works it out for itself – most of the time at least. However, string values should always be placed in quotes, and numeric values are never placed in quotes (unless you want them to be treated as text rather than numbers).
+
+Let's now combine the two vectors into an object: a dataframe. You can think of it as a table or a spreadsheet: It is an object containing variables and their values. Now we are creating a new object called "metallica" that is a data frame (sign <- can be understood as "=". We are asigning it a certain value). We want new columns in the new object be named "Name" and it will consist of the vector "metallicaNames" and another column named "Age" that consists of the vector "metallicaAges".
+
+```{r}
+metallica <- data.frame(Name = metallicaNames, Age = metallicaAges)
+
+```
+
+We can look at the contents of the dataframe by executing:
+```{r}
+metallica
+```
+
+As such, our dataframe consists of two variables (Name and Age), the first is the band member’s name, and the second is their age. Now that the dataframe has been created we can refer to these variables at any point using the general form: dataframe$variableName
+
+```{r}
+metallica$Age
+
+metallica$Name
+```
+
+The structure "dataframe$variableName" is very important. The dollar stands for "choosing something/selecting something" out of something.
+
+Now, let's look at how R treats missing values (the values that are not available).
+Although as researchers we strive to collect complete sets of data, it is often the case that we have missing data. Missing data can occur for a variety of reasons: in long questionnaires participants accidentally miss out questions; in experimental procedures mechanical faults can lead to a datum not being recorded. However, just because we have missed out on some data for a participant doesn’t mean that we have to ignore the data we do have. Nevertheless, we do need to tell R that a value is missing for a particular case. The principle behind missing values is quite similar to that of coding variables in that we use a code to represent the missing data point. In R, the code we use is NA (in capital letters), which stands for ‘not available’. (You can read more about it in Field, A., p.92).
+
+Let's imagine that we do not know the age for "Lars" and "Rob". In that case, we could have recorded their missing data as follows when we created the vector that includes the ages of Metallica's band members:
+
+```{r}
+metallicaAges_with_missing_values <-c(NA, 47, 48, NA)
+
+```
+
+Let's create the data frame now with the vector with missing values:
+
+```{r}
+metallica_V2 <- data.frame(Name = metallicaNames, Age = metallicaAges_with_missing_values)
+
+metallica_V2
+```
+
+You now see that R shows NA as missing values in the table where the age of the band member should be. Note that if you have missing values then you sometimes need to tell functions in R to ignore them. We will discuss this more later on.
+
+Let's return to the lecture slides now.
+
+Session 1: 2/2
+
+You can clean the environment by clicking on the broomstick in the top right corner. Let's remove all the objects from the environment. You can also do that with the code:
+rm(name_of_the_object)
+```{r}
+rm(metallica,metallicaAges,metallicaNames,metallicaAges_with_missing_values,metallica_V2)
+```
+
+R can also be used as a calculator. For example, we can use +, -, * (multiplication), / division, ^ (exponentiation); sqrt (square root). For instance:
+
+```{r}
+35434+83232
+
+48304-34334
+
+403*53
+
+48304/403
+
+5^10
+
+sqrt(32)
+
+
+```
+
+All the arithmetic operators that can be used are summarized in a slide in our presentation.
+
+R and R-packages have some basic datasets built in. Let's inspect the datasets the base R provides. The command below should open a new window where you can inspect the list of available datasets.
+
+```{r}
+data()
+
+```
+
+Let's load the dataset MTcars. The data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973–74 models).
+
+
+```{r}
+data(mtcars)
+
+```
+
+Now you should notice that in the TOP right corner you have a new data frame in the environment. We can see that it has 32 observations (rows) and 11 variables (columns). Let's inspect it with clicking on the table icon (right top).
+
+
+Let's inspect it further by running commands. This command gives us information on the data: we can see the variables and their values in rows. We can also see that all the variables are coded as numeric variables. The structure is: str(name_of_the_dataframe)
+
+```{r}
+str(mtcars)
+
+```
+
+In case we want to change the type of the variable from numeric to character, from character to numeric, or to set it as a factor (important for some type of analysis - In R, factors are a class of data that allow for ordered categories with a fixed set of acceptable values. Typically, you would convert a column from character or numeric class to a factor if you want to set an intrinsic order to the values (“levels”) so they can be displayed non-alphabetically in plots and tables.)
+
+When experimenting with an object, it is always best to create a copy of it (in case you make a mistake, you are not changing the original). With the command below, we are creating a new object mtcars_2 from the object mtcars.
+
+```{r}
+mtcars_2 <- mtcars
+```
+
+Now, let's change, let's say, the variable "hp" from numeric to character. For this, you need the command:
+Changing the existing variable from something to a character type (text):
+dataframe_name$variable_name <- as.character(dataframe_name$variable_name)
+
+Changing the existing variable from something to a numeric type (numbers):
+dataframe_name$variable_name <- as.numeric(dataframe_name$variable_name)
+
+
+Let's change the variable "hp" from numeric to character now:
+
+```{r}
+mtcars_2$hp <- as.character(mtcars_2$hp)
+
+```
+
+Let's check now if it worked:
+
+```{r}
+str(mtcars_2)
+
+```
+We can see that the hp variable now has a character type.
+
+Now, let's try to rename a variable. Let's say we want to rename wt to "weight" so it is more clear what the variable stands for.
+The structure is:
+name_of_the_dataset$new_name_of_the_variable <- name_of_the_dataset$old_name_of_the_variable)
+This will create a new variable weight that is an exact copy of the variable wt and it will embed it into the data frame.
+
+```{r}
+mtcars_2$weight <- mtcars_2$wt
+
+```
+
+Let's check if it worked:
+```{r}
+str(mtcars_2)
+
+```
+
+Now, let's calculate basic frequencies as we discussed in the slides. Let's say we are interested in the ordinal variable "gear", which stands for gear: Number of forward gears. We want to know how many cars have 3, 4 or 5 gears.
+We use command:
+table(name_of_the_dataframe$name_of_the_variable)
+
+```{r}
+table(mtcars$gear)
+
+```
+
+We can see that 15 cars have 3, 12 cars have 4 and 5 cars have 5 gears.
+
+If we would want to save the table as an object, we would asign it with "<-" like:
+name_of_the_table <- table(name_of_the_dataframe$name_of_the_variable)
+```{r}
+table_summarizing_gears <- table(mtcars$gear)
+
+```
+We can look at it by running:
+
+```{r}
+table_summarizing_gears
+```
+
+
+If we were interested in the proportions (%) of how many cars have what kind of gears, we would use the command below:
+
+```{r}
+table_summarizing_gears/sum(table_summarizing_gears)      
+
+```
+
+We can see that cars that have 3 gears make up 46.88 % of all cars in our dataset (the value you see in the table times 100). 37.50 & of the cars have 4 gears and 15.63 % of the cars have 5 gears. 
+
+Let's check if it adds up to 100 % (just to show you it works)
+```{r}
+46.88 + 37.50 + 15.63
+```
+
+Let's now make a bar chart / bar plot out of the information above.
+
+This command shows us the names of the columns:
+
+```{r}
+colnames(mtcars)
+```
+
+First, let's get some information on the arguments that go into the function barplot:
+```{r}
+?barplot
+
+
+```
+
+Now, let's tell R that the bars and their height should consist of the number per category, meaning we are utilizing the table we created above (that informs us about the frequencies in categories). We put this table (that we created as an object, as an argument "height"). We want the name for the X axis to be "Number of gears"; the name of the y-axis "Number of cars", the main name to be: "Bar plot of number of gears"; and we want the color to be "mistyrose"
+```{r}
+barplot(height = table_summarizing_gears,
+        xlab = "Number of gears",
+        ylab = "Number of cars",
+        main = "Bar plot of number of gears",
+        col = "mistyrose")
+```
+
+Here you can find more information about the customizations of the barplot: https://r-graph-gallery.com/209-the-options-of-barplot.html
+
+You can play around with the colours too:
+```{r}
+barplot(height = table_summarizing_gears,
+        xlab = "Number of gears",
+        ylab = "Number of cars",
+        main = "Bar plot of number of gears",
+        col = "blue")
+
+barplot(height = table_summarizing_gears,
+        xlab = "Number of gears",
+        ylab = "Number of cars",
+        main = "Bar plot of number of gears",
+        col = "red")
+
+barplot(height = table_summarizing_gears,
+        xlab = "Number of gears",
+        ylab = "Number of cars",
+        main = "Bar plot of number of gears",
+        col = "green")
+```
+
+Now, let's run some descriptive statistics.
+
+You can find out information about how to run the basic descriptive statistics here: https://bookdown.org/ndphillips/YaRrr/summary-statistics.html
+
+Let's first focus on measures of central tendency: mean, median and mode.
+
+```{r}
+colnames(mtcars)
+```
+
+
+Let's say we are interested in the mean of the variable "hp" - horsepower.
+
+Description of variables of the mtcars again:
+mpg: Miles/(US) gallon
+cyl: Number of cylinders
+disp: Displacement (cu.in.)
+hp: Gross horsepower
+drat: Rear axle ratio
+wt: Weight (1000 lbs)
+qsec: 1/4 mile time
+vs: V/S
+am: Transmission (0 = automatic, 1 = manual)
+gear: Number of forward gears
+carb: Number of carburetors
+
+Arithmetic mean / average. We use the "mean" function and we specify the data frame and the variable.
+
+```{r}
+mean(mtcars$hp)
+```
+
+We see above that on average, a car in the dataset has 146.69 horsepower. In case there were missing data, however, we would get an error statement, so we better specify (for the future), that we do not want to consider missing values (NAs) in the calculation.
+
+```{r}
+mean(mtcars$hp, na.rm = TRUE)
+```
+
+Let's calculate median now.
+```{r}
+median(mtcars$hp, na.rm = TRUE)
+
+```
+We can see that the median is 123.
+
+Now, let's calculate mode. For this function, we need an R package.
+
+R comes with some base functions ready for you to use. However, to get the most out of it we need to install packages that enable us to do particular things, meaning if you want to access data and code written by other people, you’ll need to install it as a package. Now let's install the "DescTools" package. First, you need to install it (needs to be run just once). Now click on the new chunk and copy this code there:
+
+install.packages("DescTools")
+
+After it is installed, for using the package, you need to "call it" via the command below:
+
+```{r}
+library(DescTools)
+```
+
+Information on installing and loading packages: https://milton-the-cat.rocks/learnr/r/r_getting_started/#section-installing-and-loading-packages
+
+Let's calculate the mode now.
+
+```{r}
+Mode(mtcars$hp, na.rm = TRUE)
+```
+
+Here we can see that the most occuring values are 110, 175 and 180, so we have 3 modes.
+
+Let's focus on the measures of dispersion: standard deviation, variance, range, interquantile range, maximum and minimum.
+
+Variance:
+```{r}
+var(mtcars$hp)
+```
+
+The variance should be 4700.87
+
+Standard deviation:
+```{r}
+sd(mtcars$hp)
+```
+
+
+Minimum:
+```{r}
+min(mtcars$hp)
+
+```
+
+Maximum:
+```{r}
+max(mtcars$hp)
+```
+
+Interquantile range:
+```{r}
+IQR(mtcars$hp)
+```
+
+
+Alternatively, the summary function can be used to gives us values on medians, means, minimum, maximum, 1st quantile, 3rd quantile, of all variables that are coded as numeric. This function is run on the whole dataframe (we are not choosing a specific variable). If we want everything rounded to 2 digits, we need to specify the argument.
+
+```{r}
+summary(mtcars)
+
+summary(mtcars, digits = 2)
+```
+
+Let's now create a histogram of the variable "qsec" standing for how fast a car runs 1/4 mile in milliseconds.
+
+```{r}
+hist(mtcars$qsec)
+```
+
+For boxplot, we use a simple function "boxplot":
+```{r}
+boxplot(mtcars$qsec)
+
+
+```
+
+We can see that we have one outlier which scores above value 22. We can check which value has the maximum value to find out which one is the outlier by running the code below:
+
+```{r}
+mtcars[which.max(mtcars$qsec),]
+
+```
+
+
+References:
+Field, A., Miles, J., & Field, Z. (2012). Discovering statistics using R. SAGE Publications
+Field, A. (2023): Getting started in R and Rstudio https://milton-the-cat.rocks/learnr/r/r_getting_started/#section-overview
+Grolemund, G., (2014). Hands-On Programming with R https://rstudio-education.github.io/hopr/
+Phillips, N. D. (2018). YaRrr! The Pirate’s Guide to R https://bookdown.org/ndphillips/YaRrr/
+
+
+
+
+

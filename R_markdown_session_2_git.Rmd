@@ -1,0 +1,594 @@
+---
+title: "R_markdown_session_2"
+author: "Dominika Betakova"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+
+Session 2: 1/2
+
+Content:
+- loading the data, exporting the markdown as a pdf
+- recoding
+- calculating a new variable from existing ones; index
+- selecting / splitting a dataset
+- Homework 1 walkthrough
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Setting up a directory:
+```{r}
+setwd("/Users/betakova/Documents/R - Directory/PhD/Teaching_materials")
+
+```
+
+Checking the directory:
+```{r}
+getwd()
+```
+
+R can load many types of data: Excel sheet, .csv files, SPSS files, STATA files, etc.
+
+In our seminar, we will work with an R native format of data: ".RData files". They are easy to load and save.
+
+Information about these can be found here:
+https://bookdown.org/ndphillips/YaRrr/rdata-files.html
+
+In our seminar, we will work with the data coming from the European Social Science Survey.
+
+About the survey:
+The European Social Survey (ESS) is an academically driven cross-national survey, founded in 2001. It has been administered in 40 countries to date. Its three aims are, firstly – to monitor and interpret changing public attitudes and values within Europe and to investigate how they interact with Europe's changing institutions, secondly – to advance and consolidate improved methods of cross-national survey measurement in Europe and beyond, and thirdly – to develop a series of European social indicators, including attitudinal indicators. ESS data collection is based on an hour-long face-to-face interview. Due to the impact of the COVID-19 pandemic at Round 10, a total of 9 countries switched to a self-completion (web and paper) approach, while 22 countries used ESS’s usual face-to-face fieldwork approach.
+
+More information can be found here:
+https://ess.sikt.no/en/study/172ac431-2a06-41df-9dab-c1fd8f3877e7/432
+
+Please note that this is the dataset you will also work with as part of your homework 1.
+
+Firstly, let's download the data from Moodle. Save the data file in your directory. Then you need to load it to R by specifying where it is saved. The path is as when setting up the directory, but you need to specify the name of the file. Let's load it from there now:
+
+
+```{r}
+
+ESS10_cleaned <- readRDS("/Users/betakova/Documents/R - Directory/PhD/Teaching_materials/ESS10_cleaned")
+
+```
+Please note that the dataset we see now is already cleaned (dropped columns, rows, etc.) It has 4537 observations of 70 variables. Let's look at the names of the columns:
+
+```{r}
+colnames(ESS10_cleaned)
+```
+The documentation can be found in the Moodle (file ESS10_data_protocol_e01_7_reduced).
+
+Now, let's create a frequency table to look at which countries we have in the dataset.
+
+```{r}
+table(ESS10_cleaned$cntry)
+```
+
+We can see that we have 1542 respondents from Estonia, 1577 from Finland and 1418 from Slovakia.
+
+Let's create a copy of the dataset.
+
+```{r}
+ESS10_cleaned_V2 <- ESS10_cleaned
+```
+
+Let's use the copy from now on, in case we make a mistake so we can always go back.
+
+We are interested in the variable nwspol standing for News about politics and current affairs, watching, reading or listening, in minutes. From the previous lecture, we know that missing values are denoted as "NA" in R. We know system-missing values, denoted as NA. However, sometimes researchers indicate why a value is missing (a respondent refused to answer, did not know the answer, etc.), these are called user-missing values. In that case, the documentation states, for instance: value 77 for don't know, -88 for refused to answer, etc. We can see in the documentation that for this answer, we have values 7777 for Refusal, 8888 for Don't know, and 9999 for no answer. Now, we want to tell R that it should treat all these user-missing values as system-missing values (NAs). Otherwise it would calculate with 7777 as 7777 minutes spent reading/watching/listening news, etc., which would bias our results.
+
+First, let's look at the mean of the variable in interest (with the values 7777,8888,9999 incorrectly counted as minutes instead of missing values)
+```{r}
+
+mean(ESS10_cleaned_V2$nwspol)
+
+
+```
+
+The mean is 253,68 minutes. Now, let's tell R that it should see values 7777,8888 and 9999 as missing.
+The structure is as follows:
+name_of_the_data_frame$name_of_the_variable[name_of_the_data_frame$name_of_the_variable==value_you_want_to_replace] <- NA
+
+
+```{r}
+
+ESS10_cleaned_V2$nwspol[ESS10_cleaned_V2$nwspol==7777] <- NA
+ESS10_cleaned_V2$nwspol[ESS10_cleaned_V2$nwspol==8888] <- NA
+ESS10_cleaned_V2$nwspol[ESS10_cleaned_V2$nwspol==9999] <- NA
+
+```
+
+Now, let's check if the mean of the value is lower:
+```{r}
+
+mean(ESS10_cleaned_V2$nwspol)
+
+```
+
+We got NA instead of a value - this is because now we need to tell R that when it calculates the mean, it should omit the missing values.
+
+```{r}
+mean(ESS10_cleaned_V2$nwspol, na.rm=TRUE)
+
+```
+
+Now, the corrected mean is 73.73 minutes that on average respondents in Estonia, Finland and Slovakia spent with engaging with news.
+
+We can also calculate the standard deviation by:
+```{r}
+sd(ESS10_cleaned_V2$nwspol, na.rm=TRUE)
+
+```
+
+
+********************* SHORT EXERCISE *************************
+Find the variable psppipla (Political system allows people to have influence on politics), p. 36 in the documentation, and a variable cptppola (Confident in own ability to participate in politics). Both variables have answer options 7 (Refusal), 8 (Don't know) and 9 (No answer). Set up those values as missing firstly for the variable psppipla and then for for the variable cptppola in the data set ESS10_cleaned_V2 (similarly as we did on lines 101-106).
+
+```{r}
+ESS10_cleaned_V2$psppipla[ESS10_cleaned_V2$psppipla==7] <- NA
+ESS10_cleaned_V2$psppipla[ESS10_cleaned_V2$psppipla==8] <- NA
+ESS10_cleaned_V2$psppipla[ESS10_cleaned_V2$psppipla==9] <- NA
+
+
+```
+
+```{r}
+ESS10_cleaned_V2$cptppola[ESS10_cleaned_V2$cptppola==7] <- NA
+ESS10_cleaned_V2$cptppola[ESS10_cleaned_V2$cptppola==8] <- NA
+ESS10_cleaned_V2$cptppola[ESS10_cleaned_V2$cptppola==9] <- NA
+```
+
+Now, calculate the mean and sd of the variable psppipla & cptppola, as on lines 118-129.
+
+```{r}
+mean(ESS10_cleaned_V2$psppipla, na.rm=TRUE)
+sd(ESS10_cleaned_V2$psppipla, na.rm=TRUE)
+
+mean(ESS10_cleaned_V2$cptppola, na.rm=TRUE)
+sd(ESS10_cleaned_V2$cptppola, na.rm=TRUE)
+
+
+
+```
+
+
+Let's save the new R object, the dataset where we set up the missing values in the variable nwspol. If you set up a directory, the below command would save the R object we specify into this directory.
+
+```{r}
+saveRDS(object=ESS10_cleaned_V2, file="ESS10_cleaned_V2")
+
+```
+
+Now, let's recode some variable. Recoding is necessary if we want to build in index (please note that for building an index, variables should have the same number of answer options (for instance likert scale 1-7, or 1-5, etc.). However, if they do not and we want to create an index, we can sometimes recode them (so that we create, for instance, four categories out of original 8 by merging options 1 and 2, 3 and 4, etc. - please note that this needs to be guided by the theory). We can also sometimes recode the variables for practical reasons: for instance, we have a variable "happy". This variable stands for "How happy are you" (p. 43 of the pdf) and the answer options range from 0 (extremely unhappy) to 10 (extremely happy).
+
+Let's say you would like to turn it around and you want 10 to mean extremely unhappy. You can do it by telling R that 0 means 10, 1 means 9, etc.
+
+For this, we will use a function "recode". This function comes from a package "dplyr", so we first need to install it by running a command install.packages (please, run the command below).
+
+install.packages(dplyr)
+
+```{r}
+install.packages("dplyr")
+
+```
+
+
+Now, we call the package:
+```{r}
+
+library(dplyr)
+
+```
+
+Let's now switch the values of the variable around and save it under a new variable name: unhappy.
+
+However, the function "recode" wants the variable to be either factor type or character type, so let's check first what type of the variable it is.
+
+```{r}
+class(ESS10_cleaned_V2$happy)
+
+```
+We see that the variable is of numeric type (which is correct), however, for the purpose of using our function let's change it to character. Now we create a new variable "happy_as_character".
+
+```{r}
+ESS10_cleaned_V2$happy_as_character <- as.character(ESS10_cleaned_V2$happy)
+```
+
+Now, let's recode this variable into a new variable, unhappy. We will tell R that: old 0 will be 10; old 1 will be 9, etc.; and that everything else that is not listed (in our case including 77 (refusal); 88 don't know; and 99 no answer) will be NA (missing value).
+
+
+```{r}
+
+ESS10_cleaned_V2$unhappy <- recode(ESS10_cleaned_V2$happy_as_character,
+  `0` = "10",
+  `1` = "9",
+  `2` = "8",
+  `3` = "7",
+  `4` = "6",
+  `5` = "5",
+  `6` = "4",
+  `7` = "3",
+  `8` = "2",
+  `9` = "1",
+  `10` = "0",
+  .default = NA_character_
+)
+
+
+```
+
+We can see that the recoding worked perfectly.
+
+In case we want to colapse a variable that consists of multiple categories, let's say 4, into a binary variable (2 categories), we can use the command below.
+
+Here, we are using a variable "aesfdrk" standing for "Feeling of safety of walking alone in local area after dark" that has answer options 1 - very safe; 2 - safe; 3 - unsafe and 4 - very unsafe; into two categories: safe and unsafe. Let's create a new binary variable that says 0 if the answers are 1 and 2 (safe) and 1 if the answers are 3 and 4 (unsafe).
+
+Let's call the new variable "unsafe_binary". We would do that with an "ifelse" command. ifelse() function takes three arguments:
+The condition: ESS10_cleaned_V2$aesfdrk %in% c(1, 2), which checks if the values in aesfdrk are either 1 or 2.
+The value if the condition is TRUE: 0, which assigns 0 if the condition is met.
+The value if the condition is FALSE: 1, which assigns 1 if the condition is not met.
+
+This command creates a new variable safe_binary in our ESS10_cleaned_V2 dataframe.
+If aesfdrk is 1 or 2, safe_binary will be 0.
+If aesfdrk is 3 or 4, safe_binary will be 1.
+
+```{r}
+
+ESS10_cleaned_V2$safe_binary <- ifelse(ESS10_cleaned_V2$aesfdrk %in% c(1, 2), 0, 1)
+
+```
+
+
+Now, we want to build a mean-based index. Please note that this is an exercise and building an index out of multiple variables should be theory-driven.
+
+Our mean-based index would represent how politically active a person is with regards to political parties or politicians or petitions. For this, we need variables:
+contplt - Contacted politician or government official last 12 months
+donprty - Donated to or participated in political party or pressure group last 12 months
+badge - Worn or displayed campaign badge/sticker last 12 months
+sgnptit - Signed petition last 12 months
+
+All of them have the answer options:
+1 - Yes
+2 - No
+7 - Refusal
+8 - Don't know
+and 9 - No answer.
+
+In our mean-based index, we want to combine all the four variables and set it up in a way that the higher the index is, the higher politicaly active a person is. For this, we need to tell R to treat values 1 (yes) as 1; and all other values are 0. Then, we add all the variables up, and we divide it by the number of items, in our case 4. This means that we will end up with an index ranging from 0.00 (not active at all) to 1.00 (very active).
+
+Let's start with recoding. We want 1 to stay 1; and tell R to recode everything else as 0.
+
+We are telling R to create 4 new variables (contplt_binary; donprty_binary; badge_binary & sgnptit_binary), attach them to the data frame; and to have a value of 1 if the condition ==1 is true; if not, use 0.
+
+```{r}
+ESS10_cleaned_V2$contplt_binary <- ifelse(ESS10_cleaned_V2$contplt == 1, 1, 0)
+ESS10_cleaned_V2$donprty_binary <- ifelse(ESS10_cleaned_V2$donprty == 1, 1, 0)
+ESS10_cleaned_V2$badge_binary <- ifelse(ESS10_cleaned_V2$badge == 1, 1, 0)
+ESS10_cleaned_V2$sgnptit_binary <- ifelse(ESS10_cleaned_V2$sgnptit == 1, 1, 0)
+```
+
+Now, let's create a mean-based index where we create an index where a person who scores 1 in all the variables gets 4 (very politically active), person who scores 0 on all will have 0, etc. The index will be called index_political_activity.
+
+```{r}
+ESS10_cleaned_V2$mean_index_political_activity <- (ESS10_cleaned_V2$contplt_binary + ESS10_cleaned_V2$donprty_binary + ESS10_cleaned_V2$badge_binary + ESS10_cleaned_V2$sgnptit_binary)/4
+
+```
+
+
+Now, every person in the dataset has a new variable mean_index_political_activity where people scoring high are more politicaly active and people scoring low have low political activity. Let's see what the mean value, standard deviation, minimum, maximum & histogram for this new variable is:
+
+```{r}
+mean(ESS10_cleaned_V2$mean_index_political_activity)
+
+sd(ESS10_cleaned_V2$mean_index_political_activity)
+
+min(ESS10_cleaned_V2$mean_index_political_activity)
+
+max(ESS10_cleaned_V2$mean_index_political_activity)
+
+hist(ESS10_cleaned_V2$mean_index_political_activity)
+
+
+```
+```{r}
+table(ESS10_cleaned_V2$mean_index_political_activity)
+```
+
+Based on the mean and the histogram, we can see that most of the people in our dataset score as politically inactive according to our data (M = 0.13, SD = 0.20; min = 0; max = 1). When we look at the histogram, we can see that it does not have a normal distribution (not bell-shaped!) and it is skewed to the right (right-skewed = most data-points are on the left side).
+
+Now, let's look whether people in, let's say Finland and Slovakia differ with regards to this variable. We will calculate the descriptive statistics conditional on a variable country.
+
+Now, we calculate a mean for participants who have a value "FI" in the variable "cntry". We will store the value in a new object called "mean_finland".
+
+```{r}
+
+mean_finland <- mean(ESS10_cleaned_V2$mean_index_political_activity[ESS10_cleaned_V2$cntry == "FI"], na.rm = TRUE)
+
+```
+To see the value, we need to "run" the new object's name:
+
+```{r}
+mean_finland
+```
+
+The mean value of political activity for people in Finland is 0.19. Now, let's look at the value in Slovakia:
+
+```{r}
+mean_slovakia <- mean(ESS10_cleaned_V2$mean_index_political_activity[ESS10_cleaned_V2$cntry == "SK"], na.rm = TRUE)
+
+mean_slovakia
+```
+
+We can see that the value for Slovakia is much lower: 0.10.
+
+********************* SHORT EXERCISE *************************
+
+In the previous exercise, you set up the missing values of the variables psppipla and cptppola . Now, create a mean-based index out of these two variables (similarly as we did on lines 255-260).
+
+```{r}
+ESS10_cleaned_V2$mean_index_polit_efficacy <- (ESS10_cleaned_V2$psppipla + ESS10_cleaned_V2$cptppola)/2
+
+```
+
+Now, calculate the mean and standard deviation of this newly created index, similarly as we did on the lines 265-277.
+
+```{r}
+mean(ESS10_cleaned_V2$mean_index_polit_efficacy, na.rm=TRUE)
+sd(ESS10_cleaned_V2$mean_index_polit_efficacy, na.rm=TRUE)
+
+```
+
+Back to political activity in Finland and Slovakia:
+Another way to compare the values based on a value in another variable (we used the country) is to split the data frame, or in other words, create two dataframes where one has people from Finland and the other people in Slovakia. Let's try it now.
+
+We would use a function called "subset". Subset is a part of a data frame. We will tell R to create a new data frame called "data_finland" from an existing data frame ESS10_cleaned_V2, and to put there the observations for which the value for the variable cntry is "FI".
+
+```{r}
+data_finland <- subset(ESS10_cleaned_V2, cntry == "FI")
+
+```
+You can see that now we have a new data frame in our environment called data_finland. Let's create another one for Slovakia:
+
+```{r}
+data_slovakia <- subset(ESS10_cleaned_V2, cntry == "SK")
+
+```
+
+Let's now calculate mean, standard deviation, minimum, maximum and median for people in Finland and in Slovakia, separately. We will save the results in a data frame called "summary_finland". We are telling R to create a new data frame summary_finland, through a function data.frame, where the columns should be named: Mean, SD, Min, Max, Median... and those would consists of the functions mean, sd, min, max, median, as we did before.
+
+```{r}
+summary_finland <- data.frame(
+  Mean = mean(data_finland$mean_index_political_activity, na.rm = TRUE),
+  SD = sd(data_finland$mean_index_political_activity, na.rm = TRUE),
+  Min = min(data_finland$mean_index_political_activity, na.rm = TRUE),
+  Max = max(data_finland$mean_index_political_activity, na.rm = TRUE),
+  Median = median(data_finland$mean_index_political_activity, na.rm = TRUE)
+)
+
+summary_finland
+```
+
+Now, let's do the same for Slovakia:
+
+```{r}
+summary_slovakia <- data.frame(
+  Mean = mean(data_slovakia$mean_index_political_activity, na.rm = TRUE),
+  SD = sd(data_slovakia$mean_index_political_activity, na.rm = TRUE),
+  Min = min(data_slovakia$mean_index_political_activity, na.rm = TRUE),
+  Max = max(data_slovakia$mean_index_political_activity, na.rm = TRUE),
+  Median = median(data_slovakia$mean_index_political_activity, na.rm = TRUE)
+)
+
+summary_slovakia
+```
+
+Here we can see the same differences as before: the mean for political activity in Finland is much higher (M=0.19, SD = 0.22) compared to Slovakia (M=0.10, SD = 0.18). In addition, median in Finland is 0.25 (the middle value), while in Slovakia it is 0.
+
+Now let's go back to the slides.
+
+Session 2: 2/2
+- independent samples t-test
+- dependent samples t-test
+- exporting the markdown as a pdf
+
+
+You can read more about t-test in RStudio in Field, Chapter 9 (9.5. and 9.6)
+
+Let's read in the data saved as an R object.
+
+```{r}
+
+big_hairy_spider_between_subjects <- readRDS("/Users/betakova/Documents/R - Directory/PhD/Teaching_materials/big_hairy_spider_between_subjects")
+
+```
+
+If we inspect the data, we see that we have 3 columns: id of the participants (name in this case); whether they saw a spider or a picture and we have the anxiety score. Now, we want to see whether there is a statistically significant difference between the mean scores of the anxiety.
+
+The way the dataset is coded, we can see it was a between-subjects design - meaning one person either saw a picture, or a real spider. We can know this by looking at the column ID, where for one person there is either picture, or a spider (not both). This means that we need to use the t-test for independent samples.
+
+In this step, we can additionally create two boxplots to see both distributions of means of anxiety for people who saw the spider and for people who saw the picture. Package ggplot2 is often use for graphics in R, as it provides great options for customization. Let's load it now (you need to install it first by running):
+
+install.packages("ggplot2")
+
+```{r}
+
+library(ggplot2)
+```
+
+Now, we will create the two boxplots. In your homework, you do not need to create boxplot with ggplot2 package (the basic one is enough), I just wanted to show you the options, as there are always multipiple ways to get to the correct solution.
+
+Boxplot with ggplot2:
+```{r}
+
+ggplot(big_hairy_spider_between_subjects, aes(x = spider_type, y = anxiety, fill = spider_type)) +
+  geom_boxplot() +
+  labs(
+    title = "Anxiety Levels by Spider Type",
+    x = "Spider Type",
+    y = "Anxiety"
+  ) +
+  theme_minimal()
+
+
+```
+Here we can see that based on the boxplots, we can say that the median anxiety for people who saw real spider was higher than for people who saw the picture. The vertical lines show "error bars", meaning where the "true"  mean could be. We can see that in our case they overlap, so it might be that this difference will not be significant (you do not need to remember that, just for an information).
+
+We can also run descriptive statistics on our dependent variable (anxiety). However, we want to group it by our indep. variable (spider_type), not an overal mean. For this, we can use a function from our package dplyr. The below gives us the mean, sd, standard error, median, min, max, grouped by the indep. variable (spider_type).
+
+The function is as follows:
+new_name_of_our_summary_object <- dataframe_name %>%
+  group_by(our_grouping_variable) %>%
+  summarise(
+    mean = mean(dependent_variable),
+    sd = sd(dependent_variable),
+    SE = sd(dependent_variable) / sqrt(n()),
+    median = median(dependent_variable),
+    min = min(dependent_variable),
+    max = max(dependent_variable)
+  )
+
+```{r}
+library(dplyr)
+
+summary_stats_spider <- big_hairy_spider_between_subjects %>%
+  group_by(spider_type) %>%
+  summarise(
+    mean = mean(anxiety),
+    sd = sd(anxiety),
+    SE = sd(anxiety) / sqrt(n()),
+    median = median(anxiety),
+    min = min(anxiety),
+    max = max(anxiety)
+  )
+
+summary_stats_spider
+
+
+```
+Based on the above, we can see that the mean anxiety differs (40 for picture, 47 for spider). Both minimum and maximum value is lower for people who saw the picture, and higher for those who saw the spider. Now, let's look at whether this mean difference is statistically significant.
+
+*Note: In case a function (like t.test) does not work, type ?t.test to see where the function is placed (in the right window, you should see in which package it is, for instance t.test (stats), and the stats should be the package). You then need to install the package via install.package("name of the package") and call it via library(name of the package).
+
+Let's run the t-test for indep.samples. The formula is as follows:
+t.test(Dependent_variable ~ grouping_variable, var.equal=TRUE, data = our_data_frame)
+
+
+```{r}
+colnames(big_hairy_spider_between_subjects)
+t.test(anxiety ~ spider_type, var.equal=TRUE, data = big_hairy_spider_between_subjects)
+
+
+```
+If we want to save the model, we would just store it as an object:
+
+```{r}
+indept_t_test_spider <- t.test(anxiety ~ spider_type, var.equal=TRUE, data = big_hairy_spider_between_subjects)
+
+indept_t_test_spider
+
+```
+Based on our results, we can see that the difference between the two groups: people who saw the real spider vs people who saw the picture, is not significant (p = 0.107)
+
+The result should be interpreted as:
+
+On average, participants experienced greater anxiety from real spiders (M = 47.00,
+SE = 3.18), than from pictures of spiders (M = 40.00, SE = 2.68). This difference was
+not significant t(22) = −1.68, p = 0.107.
+
+(all the numbers can be read from the above table, standard error and means come from the descriptive statistics function run earlier).
+
+
+Let's now try the dependent t-test, which would be within-subjects design experiment in our case - where each person saw both the picture, got their anxiety measured, and saw a spider, and also got their anxiety measured (ideally in a randomized order of exposure to different conditions).
+
+Let's clean our environment by clicking on the broomstick.
+
+Let's load the data first:
+
+```{r}
+big_hairy_spider_within_subjects <- readRDS("/Users/betakova/Documents/R - Directory/PhD/Teaching_materials/big_hairy_spider_within_subjects")
+
+```
+When we look at the data, we can see that for instance "Colton" was both exposed to picture and a real spider, so was Naasif, etc.
+
+We can also make a graph showing both distributions next to each other:
+
+```{r}
+ggplot(big_hairy_spider_within_subjects, aes(x = spider_type, y = anxiety, fill = spider_type)) +
+  geom_boxplot() +
+  labs(
+    title = "Anxiety Levels by Spider Type",
+    x = "Spider Type",
+    y = "Anxiety"
+  ) +
+  theme_minimal()
+
+```
+
+We can also run the descriptive statistics:
+
+```{r}
+summary_stats_spider <- big_hairy_spider_within_subjects %>%
+  group_by(spider_type) %>%
+  summarise(
+    mean = mean(anxiety),
+    sd = sd(anxiety),
+    SE = sd(anxiety) / sqrt(n()),
+    median = median(anxiety),
+    min = min(anxiety),
+    max = max(anxiety)
+  )
+
+summary_stats_spider
+```
+
+The structure for the dependent t-test is similar than to the one for independent t-test. The difference is that we tell R that our observations are paired.
+
+```{r}
+
+dep_t_test_spider <- t.test(anxiety ~ spider_type, paired = TRUE, data = big_hairy_spider_within_subjects)
+
+dep_t_test_spider
+
+```
+
+Here, we can see that the result of the dependent t-test shows that the differences between seeing real spider vs the picture of the spider is significant (p = 0.030).
+
+We can report the dependent t-test as:
+
+On average, participants experienced significantly greater anxiety from real spiders (M = 47.00, SE = 3.18) than from pictures of spiders (M = 40.00, SE = 2.68), t(11) = -2.47, p = 0.030).
+
+(all the numbers can be read from the above table, standard error and means come from the descriptive statistics function run earlier).
+
+Now, let's export the markdown as a pdf. You should click on: knit and choose pdf. If knitting into pdf does not work, try knitting it into word file, or even better, html.
+
+If something did not work even though you tried, copy the code from the "chunks" and put it in text (as R would run everything in the chunks and give you an error if it cannot). You can mark it is:
+
+The chunk to be run is in gray.
+
+
+# This is a note about something that did not work:
+this is the code that did not work.
+
+
+
+
+
+
+References:
+Field, A., Miles, J., & Field, Z. (2012). Discovering statistics using R. SAGE Publications
+Field, A. (2023): Getting started in R and Rstudio https://milton-the-cat.rocks/learnr/r/r_getting_started/#section-overview
+Phillips, N. D. (2018). YaRrr! The Pirate’s Guide to R https://bookdown.org/ndphillips/YaRrr/
+
+
+
+
+
+

@@ -1,0 +1,349 @@
+---
+title: "RMarkdown_session_3"
+author: "Dominika Betakova"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+install.package("tinytext")
+library(tinytext)
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Session 3: 1/2
+
+Content:
+- Short exercise: t-test
+- chi-square test & crosstabs
+- short exercise
+- correlation
+
+In this session, we will again work with the dataset ESS10_cleaned.
+
+First, we set up the working directory and load the data.
+
+```{r}
+setwd("/Users/betakova/Documents/R - Directory/PhD/Teaching_materials")
+
+ESS10_cleaned <- readRDS("/Users/betakova/Documents/R - Directory/PhD/Teaching_materials/ESS10_cleaned")
+
+```
+
+Now, open the documentation to the dataset that is saved in Moodle (like in the last session, pdf named ESS10_data_protocol_e01_7_reduced).
+
+Let's create a copy of the dataset that we will manipulate:
+```{r}
+ESS10_cleaned_v2 <- ESS10_cleaned
+```
+
+********************* SHORT EXERCISE *************************
+
+First, we will do a short exercise on t-test that we discussed in the last session. For t-test, we need the independent variable to be binary (two categories) and the dependent variable to be metric.
+Let's look now at the variables trstplt (Trust in politicians - answer options 0-10, 77 refusal, 88 don't know and 99 no answer) and vote (Voted last national election, answer options 1-Yes; 2 - No; 3 - Not eligible; 7 - refusal; 8 - don't know and 9 - no answer).
+
+First, we need to clean the data and set the answer options we are not interested in as NA. We do it now with the variable trstplt (Trust in politicians), where we need to set 77, 88 and 99 as NA.
+```{r}
+
+ESS10_cleaned_v2$trstplt[ESS10_cleaned_v2$trstplt==77] <- NA
+ESS10_cleaned_v2$trstplt[ESS10_cleaned_v2$trstplt==88] <- NA
+ESS10_cleaned_v2$trstplt[ESS10_cleaned_v2$trstplt==99] <- NA
+
+```
+
+For our independent variable, vote: as we can only have 2 categories, we are setting everything besides 1 (yes) and 2 (no) as NA. We will do this via a simple command by telling R that any value besides 1 or 2 should be treated as NA.
+The structure of the command is:
+name_of_the_datset$name_of_the_variable[name_of_the_datset$name_of_the_variable != the_number_in_question & name_of_the_datset$name_of_the_variable != the_number_in_question] <- NA
+
+```{r}
+ESS10_cleaned_v2$vote[ESS10_cleaned_v2$vote != 1 & ESS10_cleaned_v2$vote != 2] <- NA
+```
+
+Now, we can perform the independent t-test (because the observations are independent) (one observation in the DV trust in politicians is one person's response).
+
+*Note: the t.test function works without a package for me, but if it does not for you, you should install the package stats.
+
+rm(ESS10_cleaned)
+
+```{r}
+t.test(trstplt ~ vote, var.equal=TRUE, data = ESS10_cleaned_v2)
+
+
+```
+*Note: if the p-value seems like a strange number, something like: p-value < 2.2e-16; this is a denotation of a number that is very low. You can use this converter: https://iconvert.org/calculate/notation/2e-16#google_vignette to see what the value of the number is. For 2.2e-16, the value is: 0.00000000000000022.
+
+Based on the t-test above, we see that the difference is significant (p < 0.001) (based on the p-value < 2.2e-16), while the mean value of trust in politicians for group that voted is 4.38 (on a scale 0-10), and the mean value of trust in politicians in the group that did not vote is 3.51 (on a scale 0-10).
+
+
+CHI-SQUARE TEST & CROSSTABS:
+Now we will focus on chi-square test, that is suitable for inspecting a relationship between two categorical variables. Let's say we are interested in the relationship between the variables contplt (Contacted politician or government official last 12 months, p. 38 of the documentation) & donprty (Donated to or participated in political party or pressure group last 12 months, p. 38 of the documentation).
+
+First, we need to clean the variables: both variables have 7, 8 and 9 as user-missing values (refusal, don't know, no answer). Now, we will set these values for both variables as missing:
+
+```{r}
+ESS10_cleaned_v2$contplt[ESS10_cleaned_v2$contplt==7] <- NA
+ESS10_cleaned_v2$contplt[ESS10_cleaned_v2$contplt==8] <- NA
+ESS10_cleaned_v2$contplt[ESS10_cleaned_v2$contplt==9] <- NA
+
+ESS10_cleaned_v2$donprty[ESS10_cleaned_v2$donprty==7] <- NA
+ESS10_cleaned_v2$donprty[ESS10_cleaned_v2$donprty==8] <- NA
+ESS10_cleaned_v2$donprty[ESS10_cleaned_v2$donprty==9] <- NA
+
+```
+
+Now, we can peform the chi-square test. This has a structure as:
+chisq.test(name_of_the_dataset$name_of_the_first_variable, name_of_the_dataset$name_of_the_second_variable, correct=FALSE)
+The order of the variables (whether contplt or donprty is named as first) do not matter.
+
+*Note: the chisq.test function works without a package for me, but if it does not for you, you should install the package stats.
+
+```{r}
+chisq.test(ESS10_cleaned_v2$contplt, ESS10_cleaned_v2$donprty, correct=FALSE)
+
+```
+Based on the chi-square test, we can conclude that the the chi-square test has a value of 341.24 and the p value is less than significance level (p < 0.001), meaning there is an association between the two variables that is statistically significant. 
+
+We could also create a cross-tab, or crosstabulation, where we can see how many people belong to each of the categories.
+
+For this, we would need the function CrossTable, which is in the package "gmodels". First, install the package "gmodels".
+
+install.packages("gmodels")
+
+Then, call the library with the command:
+```{r}
+
+library(gmodels)
+
+```
+
+Now, let's look into the function CrossTable
+```{r}
+?CrossTable()
+
+```
+
+Now, we can create the cross table. The structure of the function is as follows:
+CrossTable(dataset$variable1, dataset$variable2, prop.r=TRUE, prop.c=TRUE, prop.t = TRUE)
+
+The prop._ command means that we want the proportions for row (prop.r), column (prop.c) and table (prop.t).
+
+
+```{r}
+CrossTable(ESS10_cleaned_v2$contplt, ESS10_cleaned_v2$donprty, prop.r=TRUE, prop.c=TRUE, prop.t = TRUE)
+
+```
+We can see that we have N=4462 observations. Most of the people fall into the category where they scored 2 in both variables (82%), meaning they did not contact politician or government official, and they did not donate or did not participate in political party.
+
+********************* SHORT EXERCISE *************************
+
+Now, try to calculate the chi-square test for variables contplt (Contacted politician or government official last 12 months), we have already cleaned this variable (7, 8, 9 as NA), in line 86-97; and variable sgnptit (Signed petition last 12 months).
+
+First, set up options 7, 8, 9 as missing in the variable sgnptit.
+
+```{r}
+ESS10_cleaned_v2$sgnptit[ESS10_cleaned_v2$sgnptit==7] <- NA
+ESS10_cleaned_v2$sgnptit[ESS10_cleaned_v2$sgnptit==8] <- NA
+ESS10_cleaned_v2$sgnptit[ESS10_cleaned_v2$sgnptit==9] <- NA
+```
+
+Now, calculate the chi-square test for variables contplt & sgnptit. Is the association significant?
+
+```{r}
+chisq.test(ESS10_cleaned_v2$contplt, ESS10_cleaned_v2$sgnptit, correct=FALSE)
+
+```
+
+
+CORRELATION - Let's go back to the presentation now
+
+For calculating correlation, we need two metric variables. Let's say we are interested in the correlation between the variables pplfair (Most people try to take advantage of you, or try to be fair) & pplhlp (Most of the time people helpful or mostly looking out for themselves), p. 34 and 35 of the documentation.
+
+First, we again need to set the user-missing values (we can see those are 77, 88 and 99 for both variables) as system missing (NA). We will do this now:
+
+```{r}
+ESS10_cleaned_v2$pplfair[ESS10_cleaned_v2$pplfair==77] <- NA
+ESS10_cleaned_v2$pplfair[ESS10_cleaned_v2$pplfair==88] <- NA
+ESS10_cleaned_v2$pplfair[ESS10_cleaned_v2$pplfair==99] <- NA
+
+ESS10_cleaned_v2$pplhlp[ESS10_cleaned_v2$pplhlp==77] <- NA
+ESS10_cleaned_v2$pplhlp[ESS10_cleaned_v2$pplhlp==88] <- NA
+ESS10_cleaned_v2$pplhlp[ESS10_cleaned_v2$pplhlp==99] <- NA
+```
+
+Now, we will calculate the correlation between the two variables. For this, we use the function cor.test, which has a structure of:
+cor.test(dataset$variable, dataset$variable)
+
+It does not matter whether we put pplfair or pplhlp as first.
+
+*Note: the cor.test function works without a package for me, but if it does not for you, you should install the package stats.
+
+
+```{r}
+?cor.test
+cor.test(ESS10_cleaned_v2$pplfair, ESS10_cleaned_v2$pplhlp)
+
+```
+Interpretation: Based on the results, we can write that we found a strong positive correlation between the variables r(4513) = 0.58, which is significant (p < 0.001). This means that as the variable pplfair increases, the variable pplhlp increases too.
+
+We took the number in the brackets (4513) from the output above (df), similarly as the Pearson's correlation coefficient (0.58). According to the rules of thumb from the presentation, this is a strong positive correlation (r approx. + 0.50 = strong correlation, slide 27).
+
+Now try to calculate a correlation between the variables pplfair (used above) and the variable psppsgva (Political system allows people to have a say in what government does).
+
+First, we again need to set the user-missing values (we can see those are 7, 8 and 9) for psppsgva as system missing (NA). We will do this now:
+
+```{r}
+ESS10_cleaned_v2$psppsgva[ESS10_cleaned_v2$psppsgva==7] <- NA
+ESS10_cleaned_v2$psppsgva[ESS10_cleaned_v2$psppsgva==8] <- NA
+ESS10_cleaned_v2$psppsgva[ESS10_cleaned_v2$psppsgva==9] <- NA
+```
+
+Now, calculate the correlation between pplfair and psppsgva.
+```{r}
+cor.test(ESS10_cleaned_v2$pplfair, ESS10_cleaned_v2$psppsgva)
+
+```
+
+
+Now, let's go back to the slides to discuss simple and multiple linear OLS regression.
+
+Session 3: 2/2
+
+Content:
+- Simple OLS regression
+- Multiple OLS regression
+- Short exercise
+
+SIMPLE LINEAR OLS REGRESSION
+
+"In the previous chapter we looked at how to measure relationships between two variables. These correlations can be very useful, but we can take this process a step further and predict one variable from another. A simple example might be to try to predict levels of stress from the amount of time until you have to give a talk. You’d expect this to be a negative relationship (the smaller the amount of time until the talk, the larger the anxiety). We could then extend this basic relationship to answer a question such as ‘if there’s 10 minutes to go until someone has to give a talk, how anxious will they be?’ This is the essence of regression analysis: we fit a model to our data and use it to predict values of the dependent variable (DV) from one or more independent variables (IVs). Regression analysis is a way of predicting an outcome variable from one predictor variable (simple regression) or several predictor variables (multiple regression). This tool is incredibly useful because it allows us to go a step beyond the data that we collected." (Field et al., 2012, p. 246)
+
+OLS then refers to the method of how the "line of the best fit" is calculated - in the OLS case, it uses the ordinary least squares (we also know other methods, like maximum likelihood).
+
+SIMPLE LINEAR REGRESSION:
+Simple linear regression has one predictor (indep.variable) and one outcome (dependent variable). Let's say we are interested in the dependent variable nwspol (News about politics and current affairs, watching, reading or listening, in minutes), p. 34 of the documentation.
+
+Firstly, we need to set up 7777 (refusal), 8888 (don't know) and 9999 (no answer) as missing values (NA) (we did the same in session 2, lines 100-107).
+
+```{r}
+
+ESS10_cleaned_v2$nwspol[ESS10_cleaned_v2$nwspol==7777] <- NA
+ESS10_cleaned_v2$nwspol[ESS10_cleaned_v2$nwspol==8888] <- NA
+ESS10_cleaned_v2$nwspol[ESS10_cleaned_v2$nwspol==9999] <- NA
+
+```
+
+Let's try to predict the DV nwspol by one independent variable, meaning we will construct a simple linear regression. Let's try the variable lrscale, Placement on left right scale. So basically, we are trying to predict whether someone's news consumption can be predicted by their political orientation.
+
+First, we need to set up 77, 88 and 99 (user-missing values) as NAs in the variable lrscale.
+
+```{r}
+ESS10_cleaned_v2$lrscale[ESS10_cleaned_v2$lrscale==77] <- NA
+ESS10_cleaned_v2$lrscale[ESS10_cleaned_v2$lrscale==88] <- NA
+ESS10_cleaned_v2$lrscale[ESS10_cleaned_v2$lrscale==99] <- NA
+```
+
+For regressions, we use the function lm(). The function has the structure of:
+new_name_for_the_model <- lm(dependent_variable ~ indep_variable, data=dataset)
+
+*Note: if the function lm does not work for you, install (and afterwards load) the package stats.
+
+```{r}
+simple_lin_reg <- lm(nwspol ~ lrscale, data=ESS10_cleaned_v2)
+```
+
+Now, we need to use the function summary on the model to see the coefficients, R2, etc.
+
+```{r}
+summary(simple_lin_reg)
+```
+hist(ESS10_cleaned_v2$nwspol)
+
+Here we can see the result of the regression model. Firstly, we can see a table (under the name Coefficients) that informs us about the UNSTANDARDIZED BETA coefficients. Here, we can see that the unstandardized beta coefficient value for the variable lrscale is -0.44, and it is not significant (denoted by the star). 
+
+*Note: For example: If it was significant (WHICH IT IS NOT!), we would say that the lower the placement on the left-right ideology scale, the higher the news consumption. To be specific, if a person scores one unit lower on lrscale, their news consumption decreases in approx. -0,44 minute of news consumption
+
+The adjusted R-squared of the model is very low, meaning the model explains 0 % of the variance in the dependent variable nwspol, and it is not significant (p = 0.367). (for details, see Field et al., 2012, chapter 7.4-7.5.1)
+
+We can get the standardized coefficients by running the command lm.beta (that is within the package QuantPsyc).
+
+Install the package QuantPsyc now by:
+install.package("QuantPsyc")
+
+```{r}
+library(QuantPsyc)
+
+lm.beta(simple_lin_reg)
+
+```
+
+Here we can see that the standardized coefficient for lrscale is -0.01.
+
+As this regression is not doing the best job (it is very bad), we will add some variables to try to predict the news consumption, meaning we will construct multiple linear regression. These could be, for instance, trstplt (Trust in politicians - answer options 0-10, 77 refusal, 88 don't know and 99 no answer; these answer options were already set up as NAs on lines 52-58) and binary variable contplt (Contacted politician or government official last 12 months; this variable we already cleaned on the lines 82-92).
+
+Now, we will construct a multiple linear regression with the same function/command lm(), however, we just add the new independent variable via +.
+
+```{r}
+ESS10_cleaned_v2$trstplt[ESS10_cleaned_v2$trstplt==77] <- NA
+ESS10_cleaned_v2$trstplt[ESS10_cleaned_v2$trstplt==88] <- NA
+ESS10_cleaned_v2$trstplt[ESS10_cleaned_v2$trstplt==99] <- NA
+
+ESS10_cleaned_v2$contplt[ESS10_cleaned_v2$contplt==7] <- NA
+ESS10_cleaned_v2$contplt[ESS10_cleaned_v2$contplt==8] <- NA
+ESS10_cleaned_v2$contplt[ESS10_cleaned_v2$contplt==9] <- NA
+
+```
+
+
+```{r}
+multiple_lin_reg <- lm(nwspol ~ lrscale + trstplt + contplt, data=ESS10_cleaned_v2)
+
+```
+
+Now we apply the function summary:
+```{r}
+summary(multiple_lin_reg)
+```
+This multiple regression is still doing a bad job in predicting news consumption: We can see that the Adjusted R2 is very low, in other words, the independent variables (predictors) explain 0 % in the variance (we would calculate the percentage by multiplying with 100) in the dependent variable (news consumption), and the model is not significant (p = 0.360) (note: as visible from the p-value: 0.3603).
+
+None of the predictors are significant.
+
+We can also see the value of unstandardized beta coefficients (so we can compare the strenght of the effect).
+
+```{r}
+lm.beta(multiple_lin_reg)
+```
+
+
+********************* SHORT EXERCISE *************************
+
+Try to predict the dependent variable nwspol by variables trstsci (Trust in scientists) and polintr (How interested in politics).
+
+Firstly, set up user-missing values (77,88,99 for trstsci and 7,8,9 for polintr) as missing values (NAs).
+```{r}
+ESS10_cleaned_v2$trstsci[ESS10_cleaned_v2$trstsci==77] <- NA
+ESS10_cleaned_v2$trstsci[ESS10_cleaned_v2$trstsci==88] <- NA
+ESS10_cleaned_v2$trstsci[ESS10_cleaned_v2$trstsci==99] <- NA
+
+ESS10_cleaned_v2$polintr[ESS10_cleaned_v2$polintr==7] <- NA
+ESS10_cleaned_v2$polintr[ESS10_cleaned_v2$polintr==8] <- NA
+ESS10_cleaned_v2$polintr[ESS10_cleaned_v2$polintr==9] <- NA
+```
+
+Now, construct a multiple linear regression. How much of the variance of the dependent variable is explained by the combination of these predictors? (Adjusted R2). Which variables are significant predictors of the dependent variable nwspol? How big is their unstandardized coefficient?
+
+
+```{r}
+multiple_lin_reg_2 <- lm(nwspol ~ trstsci + polintr, data=ESS10_cleaned_v2)
+
+summary(multiple_lin_reg_2)
+
+```
+
+
+
+References:
+Field, A., Miles, J., & Field, Z. (2012). Discovering statistics using R. SAGE Publications
+
+
