@@ -258,7 +258,6 @@ Now, we need to use the function summary on the model to see the coefficients, R
 ```{r}
 summary(simple_lin_reg)
 ```
-hist(ESS10_cleaned_v2$nwspol)
 
 Here we can see the result of the regression model. Firstly, we can see a table (under the name Coefficients) that informs us about the UNSTANDARDIZED BETA coefficients. Here, we can see that the unstandardized beta coefficient value for the variable lrscale is -0.44, and it is not significant (denoted by the star). 
 
@@ -344,6 +343,9 @@ summary(multiple_lin_reg_2)
 
 
 References:
+2E-16 to numbers - Convert scientific notation to decimal notation. (2024). iConvert. Retrieved March 29, 2024, from https://iconvert.org/calculate/notation/2e-16#google_vignette
+ESS | ESS Round 10 - 2020. Democracy, Digital Social Contacts. (2020). Retrieved August 31, 2022, from https://ess.sikt.no/en/study/172ac431-2a06-41df-9dab-c1fd8f3877e7/432
 Field, A., Miles, J., & Field, Z. (2012). Discovering statistics using R. SAGE Publications
+Profandyfield. (2024). GitHub - Profandyfield/Discovr: DiscoVR package for R to accompany discovering statistics using R and RStudio. GitHub. Retrieved March 1, 2024, from https://github.com/profandyfield/discovr
 
 
