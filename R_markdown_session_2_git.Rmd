@@ -156,7 +156,6 @@ mean(ESS10_cleaned_V2$cptppola, na.rm=TRUE)
 sd(ESS10_cleaned_V2$cptppola, na.rm=TRUE)
 
 
-
 ```
 
 
@@ -174,11 +173,6 @@ Let's say you would like to turn it around and you want 10 to mean extremely unh
 For this, we will use a function "recode". This function comes from a package "dplyr", so we first need to install it by running a command install.packages (please, run the command below).
 
 install.packages(dplyr)
-
-```{r}
-install.packages("dplyr")
-
-```
 
 
 Now, we call the package:
@@ -580,11 +574,11 @@ this is the code that did not work.
 
 
 
-
-
 References:
+ESS | ESS Round 10 - 2020. Democracy, Digital Social Contacts. (2020). Retrieved August 31, 2022, from https://ess.sikt.no/en/study/172ac431-2a06-41df-9dab-c1fd8f3877e7/432
 Field, A., Miles, J., & Field, Z. (2012). Discovering statistics using R. SAGE Publications
 Field, A. (2023): Getting started in R and Rstudio https://milton-the-cat.rocks/learnr/r/r_getting_started/#section-overview
+Profandyfield. (2024). GitHub - Profandyfield/Discovr: DiscoVR package for R to accompany discovering statistics using R and RStudio. GitHub. Retrieved March 1, 2024, from https://github.com/profandyfield/discovr
 Phillips, N. D. (2018). YaRrr! The Pirate’s Guide to R https://bookdown.org/ndphillips/YaRrr/
 
 
